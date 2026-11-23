@@ -73,15 +73,22 @@ def ensure_config(provider: str = "ollama", model: str | None = None) -> Path:
         agents = data.get("agents", {})
         current = next(iter(agents.values()), {}) if agents else {}
         if current.get("provider") == provider:
+            _patch_runtime(data)
             _patch_provider_model(data, provider, chosen_model)
             CONFIG_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
             return CONFIG_PATH
+        # Provider switch: `config init` without --force silently keeps
+        # the old config (verified locally), so force the overwrite.
 
     HOME_DIR.mkdir(parents=True, exist_ok=True)
     env = runtime_env()
+    # `config init` accepts fewer provider names than `setup`
+    # (e.g. no "cortensor-portal"); initialize with the closest name
+    # and then set the agent's provider field to the requested one.
+    init_provider = {"cortensor-portal": "cortensor"}.get(provider, provider)
     cmd = [
         sys.executable, "-m", "openminion",
-        "config", "init", "--provider", provider,
+        "config", "init", "--provider", init_provider, "--force",
     ]
     # `openminion` console script is the documented entry point; fall back
     # to it if `python -m openminion` is unavailable.
@@ -89,7 +96,7 @@ def ensure_config(provider: str = "ollama", model: str | None = None) -> Path:
     if result.returncode != 0 or not CONFIG_PATH.exists():
         exe = Path(sys.executable).parent / "openminion"
         result = subprocess.run(
-            [str(exe), "config", "init", "--provider", provider],
+            [str(exe), "config", "init", "--provider", init_provider, "--force"],
             capture_output=True, text=True, env=env, timeout=120,
         )
     if not CONFIG_PATH.exists():
@@ -98,9 +105,32 @@ def ensure_config(provider: str = "ollama", model: str | None = None) -> Path:
             f"{result.stdout[-500:]} {result.stderr[-500:]}"
         )
     data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    for agent_cfg in data.get("agents", {}).values():
+        agent_cfg["provider"] = provider
+    _patch_runtime(data)
     _patch_provider_model(data, provider, chosen_model)
     CONFIG_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return CONFIG_PATH
+
+
+def _patch_runtime(data: dict) -> None:
+    """FixBrief runtime posture, applied on every ensure_config call.
+
+    - Memory capture off: it adds extra structured-output LLM calls per
+      turn (and GBNF grammar requests that crash llama.cpp servers).
+      Sessions still persist via storage.
+    - Turn budgets raised: local CPU inference (~5 tok/s) needs far
+      more than the 300 s default; Agent.run(timeout_seconds=...) does
+      not override the brain cap (verified locally).
+    """
+    runtime = data.setdefault("runtime", {})
+    runtime["memory_enabled"] = False
+    runtime["memory_dynamic_retrieval_enabled"] = False
+    runtime["session_summary_enrichment_enabled"] = False
+    runtime["brain_turn_timeout_seconds"] = 2400
+    runtime["chat_turn_timeout_seconds"] = 2400.0
+    gateway = data.setdefault("gateway", {})
+    gateway["api_turn_timeout_seconds"] = 2400
 
 
 def _patch_provider_model(data: dict, provider: str, model: str) -> None:

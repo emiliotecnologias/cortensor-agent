@@ -1,0 +1,1 @@
+error: provider failed [PROVIDER_ERROR]: The configured model provider failed before it could return a decision (openai request failed: [Errno 111] Connection refused). Please retry or switch models.

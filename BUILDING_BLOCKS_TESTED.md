@@ -70,7 +70,40 @@ fails with `CERTIFICATE_VERIFY_FAILED`. FixBrief's fetcher prefers
 `SSL_CERT_FILE`/system bundle. Builders behind corporate proxies will
 hit both; the SDK could normalize these once in its HTTP layer.
 
-### 7. Approval callback contract is discoverable only in source
+### 7. `config init` silently keeps the old provider without `--force`
+Re-running `openminion config init --provider openai` over an existing
+echo config exits 0 but leaves `provider: echo` in place — our first
+"model" run actually hit echo and failed validation (exit 2, honest
+but confusing). FixBrief now passes `--force` on provider switches
+(regression-tested). Also note: `config init --provider` accepts fewer
+names than `setup --list-providers` (no `cortensor-portal`; use
+`cortensor` then patch the agent provider field).
+
+### 8. Turn budget: `Agent.run(timeout_seconds=...)` does not override the 300 s brain cap
+With a local CPU model (~5 tok/s), a forced-tool turn needed >300 s
+(6 LLM calls, 14,859 input tokens, tool executed correctly) and
+returned `Stopped: turn time limit reached (300s/300s)` despite
+`timeout_seconds=850`. The cap lives in
+`runtime.brain_turn_timeout_seconds` (default 300). FixBrief raises
+brain/chat/gateway budgets to 2400 s in its project config. Document
+which timeout wins — builders on local models will hit this first.
+
+### 9. llama.cpp servers: context size and `json_schema` gaps
+(a) OpenMinion turn prompts are ~2,700–3,000 tokens before any tool
+results, so `llama_cpp.server --n_ctx 2048` fails every turn with
+HTTP 400 ("requested 2710 tokens"). Use `--n_ctx 8192` or larger.
+(b) `llama-cpp-python` 0.3.37's server rejects
+`response_format.type=json_schema` (only `text`/`json_object`).
+OpenMinion's typed output still works because validation happens
+client-side (`model_validate_json` on reply text, with prose-wrapped
+JSON tolerance) — no server-side schema enforcement required.
+(c) Memory capture (on by default) adds structured-output LLM calls
+per turn; against llama.cpp these produced GBNF grammar requests
+(`failed to parse grammar` in server logs) and extra minutes of CPU
+time. FixBrief disables memory capture for its bounded workflow;
+sessions still persist via storage.
+
+### 10. Approval callback contract is discoverable only in source
 The callback signature `(tool_name, args, approval_id) -> bool` is not
 in the PyPI README examples; it was confirmed in
 `openminion/api/agent.py`. A 5-line example in `examples/sdk/` would

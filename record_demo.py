@@ -115,14 +115,14 @@ def main() -> int:
              [fixbrief, "brief", "--device", "Samsung Galaxy A54",
               "--symptom", "not charging", "--sample", "samsung-not-charging.md",
               "--lang", "es", "--provider", args.provider, "--model", args.model,
-              "--session", "demo-session", "--timeout", "900"], 14)
+              "--session", "demo-session", "--timeout", "2400"], 14)
         )
         steps.append(
             ("Session follow-up (same session_id)",
              [fixbrief, "followup", "--session", "demo-session",
               "--message", "In one sentence, what is the most likely cause?",
               "--provider", args.provider, "--model", args.model,
-              "--timeout", "900"], 9)
+              "--timeout", "2400"], 9)
         )
     steps.append(("Brief history (SQLite)", [fixbrief, "history"], 7))
     steps.append(

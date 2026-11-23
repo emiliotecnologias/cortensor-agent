@@ -152,7 +152,7 @@ def run_model_brief(
     model: str | None = None,
     session_id: str = "fixbrief-session",
     auto_approve_writes: bool = False,
-    timeout_seconds: float = 600.0,
+    timeout_seconds: float = 2400.0,
     persist: bool = True,
 ) -> BriefRun:
     """Run one model-backed brief turn through the OpenMinion Agent."""
@@ -227,7 +227,7 @@ def run_followup(
     message: str,
     provider: str = "ollama",
     model: str | None = None,
-    timeout_seconds: float = 600.0,
+    timeout_seconds: float = 2400.0,
 ) -> tuple[str, dict]:
     """Continue an existing session with a plain-text follow-up turn."""
     cfg.normalize_no_proxy()
