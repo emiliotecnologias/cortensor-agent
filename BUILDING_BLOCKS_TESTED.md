@@ -103,7 +103,20 @@ per turn; against llama.cpp these produced GBNF grammar requests
 time. FixBrief disables memory capture for its bounded workflow;
 sessions still persist via storage.
 
-### 10. Approval callback contract is discoverable only in source
+### 10. Approval denial can end a typed-output turn with non-JSON text
+With a 1.5B local model, the agent chose the approval-gated write tool
+(`save_brief_markdown`) as its final action instead of returning the
+brief JSON. The callback denied it, and the turn ended with
+`Confirmation denied. The action was not run.` — which then failed
+`output_type` validation (our exit code 2). Two lessons: (a) with weak
+models, keep write tools out of the toolset unless the turn needs
+them, or instruct explicitly against them; (b) a denied approval
+mid-turn is a terminal outcome, not a recoverable tool error the model
+can route around. FixBrief now instructs against the write tool
+unless asked, and the recorded demo runs with `--yes` so the gate is
+exercised on the allow path (see receipt `approval_log`).
+
+### 11. Approval callback contract is discoverable only in source
 The callback signature `(tool_name, args, approval_id) -> bool` is not
 in the PyPI README examples; it was confirmed in
 `openminion/api/agent.py`. A 5-line example in `examples/sdk/` would

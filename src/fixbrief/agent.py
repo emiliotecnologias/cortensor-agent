@@ -56,7 +56,10 @@ INSTRUCTIONS = (
     "estimated_time_minutes, safety_warnings, sources. "
     "Ground every cause and step in the tool facts; do not invent "
     "procedures that are not supported by the facts. Write the brief in "
-    "the requested language."
+    "the requested language. "
+    "IMPORTANT: Never call save_brief_markdown unless the user explicitly "
+    "asks you to save a file. Your final message must be the JSON object "
+    "itself, with no extra text before or after it."
 )
 
 
