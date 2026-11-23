@@ -82,7 +82,7 @@ handling mapped to CLI exit codes, project-local `agents.json` via
 **Links:**
 - Standalone repository: https://github.com/emiliotecnologias/cortensor-agent
 - Community-projects PR: TODO_PR_URL
-- Demo video (1–5 min): TODO_VIDEO_URL
+- Demo video (85 s): https://github.com/emiliotecnologias/cortensor-agent/raw/main/demo-video.mp4
 - Building Blocks Tested: BUILDING_BLOCKS_TESTED.md (in repo + PR)
 - What We Learned: WHAT_WE_LEARNED.md (in repo + PR)
 

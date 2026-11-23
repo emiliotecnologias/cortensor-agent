@@ -11,7 +11,7 @@ STEP 2: Test suite (fully offline)
 $ .venv/bin/python -m pytest tests/ -q
 [exit 0]
 ...........................                                              [100%]
-27 passed in 13.14s
+27 passed in 10.45s
 
 
 ========================================================================
@@ -91,36 +91,38 @@ iPhone 12 with symptom 'black screen'. Brief assembled from 1 source(s) by deter
 
 - Iphone Black Screen (offline-sample: iphone-black-screen.md)
 
-[offline deterministic brief id=4]
+[offline deterministic brief id=5]
 
 
 ========================================================================
 STEP 6: Real model run: tool-grounded Spanish summary (OpenMinion Agent)
-$ .venv/bin/fixbrief followup --session model-demo --message Use get_source_facts with kind=sample and locator=samsung-not-charging.md, then write a short repair summary in Spanish (5-8 sentences) covering likely causes and first diagnostic steps. Base it only on the tool facts. --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --timeout 2400
+$ .venv/bin/fixbrief followup --session demo-live --message Use get_source_facts with kind=sample and locator=samsung-not-charging.md, then write a short repair summary in Spanish (5-8 sentences) covering likely causes and first diagnostic steps. Base it only on the tool facts. Do not save any file. --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --timeout 2400 --yes
 [exit 0]
-openminion: Policy confirmation required.
-save_brief_markdown
-Risk: write
-Side effects: local
-Reversibility: unknown
-Reason: UNKNOWN_REVERSIBILITY
-Choices: allow_once, allow_session, deny
-Reply exactly yes or allow_once to allow once, session or allow_session to allow this tool for the session, or no or deny to cancel.
-[session=model-demo run=704a5e67e4094912ba653c9126572a48 receipt=outputs/live_model_run_receipt.json]
+openminion: El problema del Samsung que no se carga es comúnmente causado por cables USB dañados o dañados. La lint puesta en el puerto de carga puede impedir que la placa de carga esté completa y el conector no se acomoda completamente, lo que resulta en un cable dañado o mal conectado. El circuito de carga en la placa principal puede estar dañado o dañado por un cuello roto o lento en el puerto, causando una pérdida de energía inespecífica.
+
+Si el problema persiste después de intentar cables y cables conocidos que funcionan correctamente, inspeccione el puerto de carga bajo la magnificación para deshacer la lint con un pincel de madera. También puedes intentar medir la corriente en un USB multímetro para ver si está obteniendo una corriente suficiente.
+
+Si los cables y las partes del cable se están ajustando, prueba uno a la vez y compara las partículas. Si el puerto es lento o la placa tiene corroedor, necesitarás reemplazar la placa de carga o cambiar los conectores dañados para solucionar el problema.
+
+El estado de los cuellos del conector puede ser un indicador de si una corriente está en un circuito de carga o no. Si no hay una corriente, necesitarás reemplazar la placa de carga o batería que esté dañada o muy baja.
+
+(5-8 sentences)
+[session=demo-live run=026e7fbb6edb4a63ad7b5af3176038a2 receipt=outputs/live_model_run_receipt.json]
 
 
 ========================================================================
 STEP 7: Session follow-up (same session_id, continuity)
-$ .venv/bin/fixbrief followup --session model-demo --message In one sentence, what is the most likely cause? --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --timeout 2400
+$ .venv/bin/fixbrief followup --session demo-live --message In one sentence, what is the most likely cause? --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --timeout 2400 --yes
 [exit 0]
-openminion: The current task is missing, so I can't provide a cause. Please provide more details or clarify the question.
-[session=model-demo run=aabfd2935e014db7bd2aef6d85a2a039 receipt=outputs/live_model_run_receipt.json]
+openminion: The most likely cause is a loose connection between the phone and its charging cable.
+[session=demo-live run=ae06deaf9a8d4b5ba96e9d16815339ac receipt=outputs/live_model_run_receipt.json]
 
 
 ========================================================================
 STEP 8: Brief history (SQLite)
 $ .venv/bin/fixbrief history
 [exit 0]
+#5 2026-11-23T05:49:57.263507+00:00 iPhone 12 — black screen [en] via deterministic-fallback
 #4 2026-11-23T05:31:29.770039+00:00 iPhone 12 — black screen [en] via deterministic-fallback
 #3 2026-11-23T03:48:44.645873+00:00 iPhone 12 — black screen [en] via deterministic-fallback
 #2 2026-11-23T03:37:06.738725+00:00 Samsung Galaxy A54 — not charging [en] via deterministic-fallback
@@ -135,17 +137,17 @@ $ cat outputs/live_model_run_receipt.json
   "openminion_version": "0.1.24",
   "provider": "openai",
   "model": "/home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf",
-  "session_id": "model-demo",
-  "run_id": "aabfd2935e014db7bd2aef6d85a2a039",
-  "thread_id": "model-demo:95fdf6ba990c4402929e894ecb3603d3",
+  "session_id": "demo-live",
+  "run_id": "ae06deaf9a8d4b5ba96e9d16815339ac",
+  "thread_id": "demo-live:7f7984ada30643229f875d93ae61b858",
   "stats": {
-    "input_tokens": 4642,
-    "output_tokens": 97,
+    "input_tokens": 4639,
+    "output_tokens": 84,
     "cache_read_tokens": 0,
     "llm_calls": 2,
     "tool_calls": 0,
     "tool_errors": 0,
-    "duration_ms": 150980
+    "duration_ms": 166463
   },
   "followup": true
 }

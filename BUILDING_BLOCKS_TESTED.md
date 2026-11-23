@@ -11,14 +11,17 @@ provider) and `openai` pointed at a local llama.cpp server
 - **Forced-tool probe** (SDK example pattern): `tool_calls=1`,
   6 LLM calls, 14,859 input tokens — forced tool executed and its
   result used in the reply. Log: `outputs/probe-llama.log`.
-- **Tool-grounded followup turn** (the demo centerpiece):
-  run `88705059891b4ccebf89edf71a898365`, session `model-demo`,
-  5 LLM calls, 1 tool call, 0 tool errors, 11,997 input / 427 output
-  tokens, 465.9 s wall time on CPU. The agent called
-  `get_source_facts` and summarized the returned facts. Receipt:
-  `outputs/live_model_run_receipt.json`. Language note: asked for
-  Spanish, the 1.5B model answered in English — content stayed
-  grounded in the tool facts, instruction-following is the limit.
+- **Tool-grounded followup turns** (the demo centerpiece):
+  standalone run `88705059891b4ccebf89edf71a898365` (5 LLM calls,
+  1 tool call, 0 errors, 11,997 in / 427 out tokens, 465.9 s;
+  transcript in `outputs/model_followup_success.txt`), and the
+  recorded demo runs `026e7fbb6edb4a63ad7b5af3176038a2` (7 LLM calls,
+  2 tool calls — Spanish summary from tool facts) +
+  `ae06deaf9a8d4b5ba96e9d16815339ac` (session-continuity answer).
+  Latest receipt: `outputs/live_model_run_receipt.json`. Language
+  note: the 1.5B model answered in English once and in imperfect
+  Spanish once — content stayed grounded in the tool facts;
+  instruction-following is the limit at this model size.
 - **Typed-output brief turns** (`output_type=RepairBrief`) did not
   complete on this hardware: one turn returned prose instead of JSON
   (correctly rejected, exit 2), one picked the write tool and hit the
