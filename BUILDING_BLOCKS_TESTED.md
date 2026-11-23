@@ -58,7 +58,19 @@ provider prose is accepted during 0.1.x. That tolerance is what makes
 typed output viable with small local models that add chatter around
 JSON. FixBrief relies on it (and still validates with pydantic).
 
-### 6. Approval callback contract is discoverable only in source
+### 6. Sandbox proxy env breaks httpx twice (environment findings, worked around)
+Two real failures hit during development in a proxied sandbox:
+(a) `NO_PROXY` containing bracketed IPv6 (`[::1]`) makes httpx raise
+`InvalidURL: Invalid port: ':1]'` when building proxy patterns — this
+would break any httpx-based provider call. FixBrief strips bracketed
+entries (`normalize_no_proxy`) before SDK runs. (b) A TLS-intercepting
+egress proxy signs with a local CA present in the system bundle /
+`SSL_CERT_FILE` but not in certifi, so default httpx verification
+fails with `CERTIFICATE_VERIFY_FAILED`. FixBrief's fetcher prefers
+`SSL_CERT_FILE`/system bundle. Builders behind corporate proxies will
+hit both; the SDK could normalize these once in its HTTP layer.
+
+### 7. Approval callback contract is discoverable only in source
 The callback signature `(tool_name, args, approval_id) -> bool` is not
 in the PyPI README examples; it was confirmed in
 `openminion/api/agent.py`. A 5-line example in `examples/sdk/` would
@@ -68,7 +80,7 @@ default and only allows `save_brief_markdown` with `--yes`.
 ## Reproduce
 
 ```bash
-.venv/bin/python -m pytest tests/ -q          # 21 offline tests
+.venv/bin/python -m pytest tests/ -q          # 25 offline tests
 .venv/bin/fixbrief setup --provider echo      # credential-free config
 .venv/bin/fixbrief brief --device "Samsung Galaxy A54" \
   --symptom "not charging" --sample samsung-not-charging.md \

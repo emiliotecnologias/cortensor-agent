@@ -13,4 +13,4 @@
 - CLI: `setup`, `doctor`, `brief`, `followup`, `history`, `show`,
   `samples`. Exit codes mirror the SDK error taxonomy.
 - SQLite brief history + JSON run receipts.
-- 21 offline tests; recorded demo video from a real terminal session.
+- 25 offline tests; recorded demo video from a real terminal session.

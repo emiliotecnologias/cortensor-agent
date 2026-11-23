@@ -4,7 +4,7 @@
 - **Status:** active (Cortensor Hackathon #5 submission)
 - **SDK:** OpenMinion 0.1.24 (`openminion==0.1.24`), Python 3.11+
 - **Demo provider:** Ollama `qwen2.5:1.5b` (free, local, no credentials)
-- **Tests:** 21 offline tests passing (`pytest tests/ -q`)
+- **Tests:** 25 offline tests passing (`pytest tests/ -q`)
 
 ## Roadmap
 

@@ -63,7 +63,7 @@ receipt. The recorded demo runs a free local model (Ollama
 qwen2.5:1.5b, no API key); any OpenAI-compatible provider — including
 Cortensor Portal — is a one-command swap. Every brief is labeled with
 its provenance (`openminion:<provider>/<model>` vs
-`deterministic-fallback`), and 21 offline tests cover extraction,
+`deterministic-fallback`), and 25 offline tests cover extraction,
 glossary, rendering, storage, CLI, and SDK wiring.
 
 **OpenMinion SDK workflow:** run-scoped `@tool` functions
@@ -75,7 +75,7 @@ handling mapped to CLI exit codes, project-local `agents.json` via
 `config init`.
 
 **Links:**
-- Standalone repository: TODO_REPO_URL
+- Standalone repository: https://github.com/emiliotecnologias/cortensor-agent
 - Community-projects PR: TODO_PR_URL
 - Demo video (1–5 min): TODO_VIDEO_URL
 - Building Blocks Tested: BUILDING_BLOCKS_TESTED.md (in repo + PR)

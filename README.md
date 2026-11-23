@@ -44,12 +44,19 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/pip install -e .
 
-# 1) Free local model (no credentials):
+# 1) Free local model (no credentials) — Option A: Ollama:
 ollama serve &                  # if not already running
 ollama pull qwen2.5:1.5b
-
-# 2) Project-local OpenMinion config (never touches ~/.openminion):
 .venv/bin/fixbrief setup --provider ollama --model qwen2.5:1.5b
+
+#    Option B: llama.cpp server (pip-only, OpenAI-compatible):
+#    .venv/bin/pip install llama-cpp-python
+#    .venv/bin/python -m llama_cpp.server \
+#      --model qwen2.5-1.5b-instruct-q4_k_m.gguf --host 127.0.0.1 --port 8000
+#    export FIXBRIEF_BASE_URL=http://127.0.0.1:8000/v1 FIXBRIEF_API_KEY=local
+#    .venv/bin/fixbrief setup --provider openai --model qwen2.5-1.5b-instruct
+
+# 2) Verify:
 .venv/bin/fixbrief doctor
 
 # 3) Model-backed brief from a bundled offline source:
@@ -81,7 +88,8 @@ Live sources work too (public URLs only; the tool fetches, the model doesn't):
 
 | Provider | Credential | Notes |
 |---|---|---|
-| `ollama` (default) | none | Free, local. Demo recorded with `qwen2.5:1.5b`. |
+| `ollama` (default) | none | Free, local. Recommended model `qwen2.5:1.5b`. |
+| `openai` + `FIXBRIEF_BASE_URL` | `local` (dummy) | Any OpenAI-compatible endpoint, e.g. a local llama.cpp server. The recorded demo in this repo used this path (see receipt). |
 | `echo` | none | SDK demo provider. Plumbing only — **not** a model run. |
 | `openrouter`, `openai`, `groq`, `cerebras`, `anthropic`, `gemini` | API key via env | Set the env var named in `.env.example`, then `fixbrief setup --provider <name>`. |
 | `cortensor-portal` | `CORTENSOR_API_KEY` | Hosted Cortensor inference; access is coordinated with the hackathon team (optional per the brief). |
@@ -111,7 +119,7 @@ reproduction notes, and `WHAT_WE_LEARNED.md` for product feedback.
 .venv/bin/python -m pytest tests/ -q
 ```
 
-21 tests, fully offline (fact extraction, glossary, fallback briefs,
+25 tests, fully offline (fact extraction, glossary, fallback briefs,
 rendering, SQLite store, CLI, and SDK wiring against the echo provider).
 
 ## Demo

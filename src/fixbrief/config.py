@@ -111,6 +111,16 @@ def _patch_provider_model(data: dict, provider: str, model: str) -> None:
     if provider == "ollama":
         entry["timeout_seconds"] = 300
         entry.setdefault("base_url", "http://127.0.0.1:11434")
+    # Any OpenAI-compatible endpoint (e.g. a local llama.cpp server) can
+    # be targeted without code changes:
+    #   FIXBRIEF_BASE_URL=http://127.0.0.1:8000/v1 FIXBRIEF_API_KEY=local
+    base_url = os.environ.get("FIXBRIEF_BASE_URL")
+    if base_url:
+        entry["base_url"] = base_url
+        entry["timeout_seconds"] = 600
+    api_key = os.environ.get("FIXBRIEF_API_KEY")
+    if api_key:
+        entry["api_key"] = api_key
 
 
 def active_provider_model() -> tuple[str, str]:
