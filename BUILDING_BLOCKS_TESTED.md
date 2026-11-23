@@ -2,8 +2,31 @@
 
 Environment: Linux x86_64, Python 3.12, `openminion==0.1.24` (PyPI),
 project-local `OPENMINION_HOME`. Providers exercised: `echo` (SDK demo
-provider) and `ollama` (`qwen2.5:1.5b`, local, no credentials).
-<!-- MODEL-RUN-SECTION: updated after the recorded Ollama run -->
+provider) and `openai` pointed at a local llama.cpp server
+(`llama-cpp-python` 0.3.37, Qwen2.5-1.5B-Instruct GGUF Q4_K_M,
+127.0.0.1:8000, no credentials, no paid services).
+
+## Real model-backed runs (receipts in `outputs/`)
+
+- **Forced-tool probe** (SDK example pattern): `tool_calls=1`,
+  6 LLM calls, 14,859 input tokens — forced tool executed and its
+  result used in the reply. Log: `outputs/probe-llama.log`.
+- **Tool-grounded followup turn** (the demo centerpiece):
+  run `88705059891b4ccebf89edf71a898365`, session `model-demo`,
+  5 LLM calls, 1 tool call, 0 tool errors, 11,997 input / 427 output
+  tokens, 465.9 s wall time on CPU. The agent called
+  `get_source_facts` and summarized the returned facts. Receipt:
+  `outputs/live_model_run_receipt.json`. Language note: asked for
+  Spanish, the 1.5B model answered in English — content stayed
+  grounded in the tool facts, instruction-following is the limit.
+- **Typed-output brief turns** (`output_type=RepairBrief`) did not
+  complete on this hardware: one turn returned prose instead of JSON
+  (correctly rejected, exit 2), one picked the write tool and hit the
+  approval denial (exit 2), and a full attempt hit
+  `TurnTimeoutError` at 2400 s (exit 3). The code path is identical
+  for hosted/stronger models; the 1.5B CPU model is the bottleneck
+  (finding 11). Structured briefs in the demo come from the labeled
+  deterministic path (`generated_by="deterministic-fallback"`).
 
 ## What was tested
 
@@ -12,7 +35,7 @@ provider) and `ollama` (`qwen2.5:1.5b`, local, no credentials).
 | Python SDK install | `pip install openminion==0.1.24` | ✅ Works (see rough edge 1) |
 | `config init` | `openminion config init --provider echo/ollama` into project-local home | ✅ Works; `Agent(config_path=...)` picks it up |
 | Decorated tools (`@tool`) | 2× `READ_ONLY` + 1 bare write tool, run-scoped | ✅ Works; functions stay plain callables (unit-testable) |
-| `forced_tools` | `forced_tools=["get_source_facts"]` | ⚠️ No-op under `echo` (see finding 2); verified with real model in demo |
+| `forced_tools` | `forced_tools=["get_source_facts"]` | ⚠️ No-op under `echo` (finding 2); ✅ verified with real model (`tool_calls=1` in receipts) |
 | Typed output (`output_type`) | `output_type=RepairBrief` (pydantic) | ✅ Correctly rejects echo replies with `AgentOutputValidationError` |
 | Sessions | `session_id` + follow-up turn | ✅ Session/run IDs returned in `AgentRunResult` |
 | Approval callback | Write tool gated by `approval_callback(tool, args, id) -> bool` | ✅ Signature confirmed in SDK source; `READ_ONLY` tools skip prompts under default policy |

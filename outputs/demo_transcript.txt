@@ -10,17 +10,17 @@ fixbrief 0.1.0
 STEP 2: Test suite (fully offline)
 $ .venv/bin/python -m pytest tests/ -q
 [exit 0]
-.........................                                                [100%]
-25 passed in 54.81s
+...........................                                              [100%]
+27 passed in 13.14s
 
 
 ========================================================================
 STEP 3: Setup: project-local OpenMinion config
-$ .venv/bin/fixbrief setup --provider echo --model qwen2.5:1.5b
+$ .venv/bin/fixbrief setup --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf
 [exit 0]
 config: /home/hatch/workspace/emilio-tecnologias/bounties/cortensor-hackathon/.fixbrief-home/.openminion/agents.json
-provider: echo
-model: qwen2.5:1.5b
+provider: openai
+model: /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf
 
 
 ========================================================================
@@ -28,9 +28,8 @@ STEP 4: Doctor: SDK, provider, samples
 $ .venv/bin/fixbrief doctor
 [exit 0]
 fixbrief 0.1.0 · openminion 0.1.24
-provider: echo · model: qwen2.5:1.5b
+provider: openai · model: /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf
 samples: iphone-black-screen.md, redmi-boot-loop.md, samsung-not-charging.md
-echo: demo provider (no model) — plumbing only, not a model run
 
 
 ========================================================================
@@ -92,20 +91,61 @@ iPhone 12 with symptom 'black screen'. Brief assembled from 1 source(s) by deter
 
 - Iphone Black Screen (offline-sample: iphone-black-screen.md)
 
-[offline deterministic brief id=3]
+[offline deterministic brief id=4]
 
 
 ========================================================================
-STEP 6: Brief history (SQLite)
+STEP 6: Real model run: tool-grounded Spanish summary (OpenMinion Agent)
+$ .venv/bin/fixbrief followup --session model-demo --message Use get_source_facts with kind=sample and locator=samsung-not-charging.md, then write a short repair summary in Spanish (5-8 sentences) covering likely causes and first diagnostic steps. Base it only on the tool facts. --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --timeout 2400
+[exit 0]
+openminion: Policy confirmation required.
+save_brief_markdown
+Risk: write
+Side effects: local
+Reversibility: unknown
+Reason: UNKNOWN_REVERSIBILITY
+Choices: allow_once, allow_session, deny
+Reply exactly yes or allow_once to allow once, session or allow_session to allow this tool for the session, or no or deny to cancel.
+[session=model-demo run=704a5e67e4094912ba653c9126572a48 receipt=outputs/live_model_run_receipt.json]
+
+
+========================================================================
+STEP 7: Session follow-up (same session_id, continuity)
+$ .venv/bin/fixbrief followup --session model-demo --message In one sentence, what is the most likely cause? --provider openai --model /home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --timeout 2400
+[exit 0]
+openminion: The current task is missing, so I can't provide a cause. Please provide more details or clarify the question.
+[session=model-demo run=aabfd2935e014db7bd2aef6d85a2a039 receipt=outputs/live_model_run_receipt.json]
+
+
+========================================================================
+STEP 8: Brief history (SQLite)
 $ .venv/bin/fixbrief history
 [exit 0]
+#4 2026-11-23T05:31:29.770039+00:00 iPhone 12 — black screen [en] via deterministic-fallback
 #3 2026-11-23T03:48:44.645873+00:00 iPhone 12 — black screen [en] via deterministic-fallback
 #2 2026-11-23T03:37:06.738725+00:00 Samsung Galaxy A54 — not charging [en] via deterministic-fallback
 #1 2026-11-23T03:36:42.274111+00:00 Samsung Galaxy A54 — not charging [es] via deterministic-fallback
 
 
 ========================================================================
-STEP 7: Run receipt (provider / model / session / stats)
+STEP 9: Run receipt (provider / model / session / stats)
 $ cat outputs/live_model_run_receipt.json
-[exit 1]
-cat: outputs/live_model_run_receipt.json: No such file or directory
+[exit 0]
+{
+  "openminion_version": "0.1.24",
+  "provider": "openai",
+  "model": "/home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+  "session_id": "model-demo",
+  "run_id": "aabfd2935e014db7bd2aef6d85a2a039",
+  "thread_id": "model-demo:95fdf6ba990c4402929e894ecb3603d3",
+  "stats": {
+    "input_tokens": 4642,
+    "output_tokens": 97,
+    "cache_read_tokens": 0,
+    "llm_calls": 2,
+    "tool_calls": 0,
+    "tool_errors": 0,
+    "duration_ms": 150980
+  },
+  "followup": true
+}

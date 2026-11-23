@@ -37,7 +37,8 @@ validated brief (JSON + Markdown) ──► SQLite history + run receipt
 ## Quick start
 
 Requires Python 3.11+. The recorded demo uses a **free local model**
-(Ollama, no account, no API key).
+(llama.cpp + Qwen2.5-1.5B, no account, no API key — Option B below;
+Ollama works too).
 
 ```bash
 python3 -m venv .venv
@@ -119,15 +120,27 @@ reproduction notes, and `WHAT_WE_LEARNED.md` for product feedback.
 .venv/bin/python -m pytest tests/ -q
 ```
 
-25 tests, fully offline (fact extraction, glossary, fallback briefs,
-rendering, SQLite store, CLI, and SDK wiring against the echo provider).
+27 tests, fully offline (fact extraction, glossary, fallback briefs,
+rendering, SQLite store, CLI, config handling, and SDK wiring against
+the echo provider).
 
 ## Demo
 
 `demo-video.mp4` is rendered from a real terminal session by
-`record_demo.py` (no staged footage): setup, doctor, tests, offline
-brief, model-backed brief with Ollama, session follow-up, and history.
-The full text transcript is in `outputs/demo_transcript.txt`.
+`record_demo.py` (no staged footage): version, tests, setup, doctor,
+offline structured brief, a real model-backed run (local llama.cpp +
+Qwen2.5-1.5B via OpenMinion's `openai` provider: the agent calls
+`get_source_facts` and summarizes the facts), a session-continuity
+follow-up, history, and the run receipt. The full text transcript is
+in `outputs/demo_transcript.txt`; run stats are in
+`outputs/live_model_run_receipt.json`.
+
+Honest scope note: typed-output brief turns (`output_type=RepairBrief`)
+did not complete on the 1.5B CPU model used here (prose instead of
+JSON once; 2400 s turn timeout once — see `BUILDING_BLOCKS_TESTED.md`
+finding 11). The structured briefs shown come from the labeled
+deterministic path; the model path is code-identical and is exercised
+end-to-end in the tool-grounded turns.
 
 ## Honest limits
 

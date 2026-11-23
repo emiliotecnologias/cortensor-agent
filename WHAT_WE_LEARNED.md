@@ -48,7 +48,8 @@ OpenMinion 0.1.24 for Cortensor Hackathon #5.
 ## Product feedback for Cortensor Portal (from the brief, not hands-on)
 
 Portal was optional for qualification and access is coordinated, so
-this entry uses Ollama locally and keeps `cortensor-portal` as a
+this entry uses a local llama.cpp model (Qwen2.5-1.5B GGUF) and keeps
+`cortensor-portal` as a
 one-command provider swap (`fixbrief setup --provider
 cortensor-portal`, `CORTENSOR_API_KEY` via env). A self-serve,
 rate-limited **free Portal key for hackathon participants** (even

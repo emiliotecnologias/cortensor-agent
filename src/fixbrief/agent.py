@@ -245,11 +245,13 @@ def run_followup(
     provider: str = "ollama",
     model: str | None = None,
     timeout_seconds: float = 2400.0,
+    auto_approve_writes: bool = False,
 ) -> tuple[str, dict]:
     """Continue an existing session with a plain-text follow-up turn."""
     cfg.normalize_no_proxy()
     config_path = cfg.ensure_config(provider, model)
     active_provider, active_model = cfg.active_provider_model()
+    approval_log: list[str] = []
     try:
         with Agent(
             instructions=INSTRUCTIONS,
@@ -257,7 +259,13 @@ def run_followup(
             config_path=str(config_path),
             session_id=session_id,
         ) as agent:
-            result = agent.run(message, timeout_seconds=timeout_seconds)
+            result = agent.run(
+                message,
+                timeout_seconds=timeout_seconds,
+                approval_callback=_approval_factory(
+                    auto_approve_writes, approval_log
+                ),
+            )
     except ProviderError as exc:
         raise BriefError(
             f"provider failed [{exc.code}]: {exc.message}", exit_code=1

@@ -59,12 +59,17 @@ or Arabic. Deterministic READ_ONLY tools fetch/load sources and extract
 causes, steps, tools, and warnings; the agent (forced first tool call,
 typed `RepairBrief` output, durable sessions, approval-gated write
 tool) structures the brief and persists it to SQLite with a JSON run
-receipt. The recorded demo runs a free local model (Ollama
-qwen2.5:1.5b, no API key); any OpenAI-compatible provider — including
-Cortensor Portal — is a one-command swap. Every brief is labeled with
-its provenance (`openminion:<provider>/<model>` vs
-`deterministic-fallback`), and 25 offline tests cover extraction,
-glossary, rendering, storage, CLI, and SDK wiring.
+receipt. The recorded demo runs a free local model (llama.cpp +
+Qwen2.5-1.5B GGUF via the `openai` provider, no API key); any
+OpenAI-compatible provider — including Cortensor Portal — is a
+one-command swap. Every brief is labeled with its provenance
+(`openminion:<provider>/<model>` vs `deterministic-fallback`), and 27
+offline tests cover extraction, glossary, rendering, storage, CLI,
+config, and SDK wiring. Typed-output brief turns exceed the turn
+budget on the 1.5B CPU model (disclosed in BUILDING_BLOCKS_TESTED.md
+finding 11); the demo's structured brief uses the labeled
+deterministic path and the model path is shown in tool-grounded turns
+with a real run receipt (5 LLM calls, 1 tool call, 0 errors).
 
 **OpenMinion SDK workflow:** run-scoped `@tool` functions
 (`get_source_facts`, `lookup_term`, approval-gated
@@ -89,7 +94,7 @@ in README.
 - Branch: `dev-emiliotecnologias` (per repo workflow: dev-{userid})
 - Title: `[Hackathon #5] feat(apps): add fixbrief-agent (v0.1.0, MIT, OpenMinion 0.1.24)`
 - Body: project summary + links (standalone repo, DoraHacks BUIDL,
-  demo video) + checks run (`pytest` 21 passed; live Ollama receipt).
+  demo video) + checks run (`pytest` 27 passed; live llama.cpp run receipt).
 - Files: `apps/fixbrief-agent/**` (code, samples, tests, docs,
   outputs/receipt + transcript; demo video linked from standalone repo).
 

@@ -127,20 +127,20 @@ def main() -> int:
         # brief above is the deterministic path, labeled as such.)
         steps.append(
             ("Real model run: tool-grounded Spanish summary (OpenMinion Agent)",
-             [fixbrief, "followup", "--session", "model-demo",
+             [fixbrief, "followup", "--session", "demo-live",
               "--message", "Use get_source_facts with kind=sample and "
               "locator=samsung-not-charging.md, then write a short repair "
               "summary in Spanish (5-8 sentences) covering likely causes "
-              "and first diagnostic steps. Base it only on the tool facts.",
+              "and first diagnostic steps. Base it only on the tool facts. Do not save any file.",
               "--provider", args.provider, "--model", args.model,
-              "--timeout", "2400"], 14)
+              "--timeout", "2400", "--yes"], 14)
         )
         steps.append(
             ("Session follow-up (same session_id, continuity)",
-             [fixbrief, "followup", "--session", "model-demo",
+             [fixbrief, "followup", "--session", "demo-live",
               "--message", "In one sentence, what is the most likely cause?",
               "--provider", args.provider, "--model", args.model,
-              "--timeout", "2400"], 9)
+              "--timeout", "2400", "--yes"], 9)
         )
     steps.append(("Brief history (SQLite)", [fixbrief, "history"], 7))
     steps.append(

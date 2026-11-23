@@ -163,6 +163,7 @@ def cmd_followup(args: argparse.Namespace) -> int:
             provider=args.provider,
             model=args.model,
             timeout_seconds=args.timeout,
+            auto_approve_writes=args.yes,
         )
     except BriefError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -244,6 +245,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_follow.add_argument("--provider", default="ollama", choices=sorted(PROVIDERS))
     p_follow.add_argument("--model", default=None)
     p_follow.add_argument("--timeout", type=float, default=2400.0)
+    p_follow.add_argument(
+        "--yes",
+        action="store_true",
+        help="Auto-approve the write tool (save_brief_markdown)",
+    )
     p_follow.set_defaults(func=cmd_followup)
 
     p_history = sub.add_parser("history", help="List stored briefs")
