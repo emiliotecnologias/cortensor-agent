@@ -116,7 +116,20 @@ can route around. FixBrief now instructs against the write tool
 unless asked, and the recorded demo runs with `--yes` so the gate is
 exercised on the allow path (see receipt `approval_log`).
 
-### 11. Approval callback contract is discoverable only in source
+### 11. Full brief turns on a 1.5B CPU model exceed even a 2400 s budget
+Measured locally (Qwen2.5-1.5B Q4_K_M via llama.cpp, ~5–10 tok/s
+generation, ~30 tok/s prompt eval): a forced-tool probe turn took
+~7 min (6 LLM calls, 14,859 input tokens, tool executed correctly).
+A full typed-output brief turn made 17+ LLM calls with ~3k-token
+prompts and hit `TurnTimeoutError` at 2400 s (correctly mapped to our
+exit code 3). The multi-phase brain loop (decide/plan/tool/closure)
+multiplies prompt-eval cost on slow local hardware. Mitigations that
+helped: warm prefix cache, memory capture off, schema-in-prompt.
+Builders targeting local models need either a faster model, a larger
+turn budget, or a leaner turn path — worth a "local model" profile in
+the docs with realistic token/time expectations.
+
+### 12. Approval callback contract is discoverable only in source
 The callback signature `(tool_name, args, approval_id) -> bool` is not
 in the PyPI README examples; it was confirmed in
 `openminion/api/agent.py`. A 5-line example in `examples/sdk/` would

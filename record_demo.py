@@ -35,11 +35,16 @@ MAX_LINES = 28
 WRAP = 108
 
 
-def run_step(title: str, cmd: list[str], timeout: int = 900) -> tuple[str, str, int]:
+def run_step(title: str, cmd: list[str], timeout: int = 2600) -> tuple[str, str, int]:
     print(f"\n=== {title} ===")
     print("$ " + " ".join(cmd))
+    import os
+
+    env = dict(os.environ)
+    env.setdefault("FIXBRIEF_BASE_URL", "http://127.0.0.1:8000/v1")
+    env.setdefault("FIXBRIEF_API_KEY", "local")
     proc = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=timeout, cwd=ROOT
+        cmd, capture_output=True, text=True, timeout=timeout, cwd=ROOT, env=env
     )
     output = (proc.stdout or "") + (proc.stderr or "")
     print(output[:3000])
@@ -89,8 +94,13 @@ def render_frame(path: Path, title: str, cmd_line: str, output: str, footer: str
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--provider", default="ollama", choices=["ollama", "echo"])
-    parser.add_argument("--model", default="qwen2.5:1.5b")
+    parser.add_argument(
+        "--provider", default="openai", choices=["ollama", "echo", "openai"]
+    )
+    parser.add_argument(
+        "--model",
+        default="/home/hatch/workspace/tools/models/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    )
     parser.add_argument("--skip-model", action="store_true", help="Skip model steps")
     args = parser.parse_args()
 
@@ -110,16 +120,24 @@ def main() -> int:
           "--sample", "iphone-black-screen.md", "--offline"], 11),
     ]
     if not args.skip_model:
+        # Real model-backed run: the agent calls get_source_facts and
+        # writes a Spanish summary from the tool facts. (Typed-output
+        # brief turns on this 1.5B CPU model exceed the turn budget —
+        # see BUILDING_BLOCKS_TESTED.md finding 11; the structured
+        # brief above is the deterministic path, labeled as such.)
         steps.append(
-            ("Model-backed brief via OpenMinion Agent (Spanish)",
-             [fixbrief, "brief", "--device", "Samsung Galaxy A54",
-              "--symptom", "not charging", "--sample", "samsung-not-charging.md",
-              "--lang", "es", "--provider", args.provider, "--model", args.model,
-              "--session", "demo-session", "--timeout", "2400"], 14)
+            ("Real model run: tool-grounded Spanish summary (OpenMinion Agent)",
+             [fixbrief, "followup", "--session", "model-demo",
+              "--message", "Use get_source_facts with kind=sample and "
+              "locator=samsung-not-charging.md, then write a short repair "
+              "summary in Spanish (5-8 sentences) covering likely causes "
+              "and first diagnostic steps. Base it only on the tool facts.",
+              "--provider", args.provider, "--model", args.model,
+              "--timeout", "2400"], 14)
         )
         steps.append(
-            ("Session follow-up (same session_id)",
-             [fixbrief, "followup", "--session", "demo-session",
+            ("Session follow-up (same session_id, continuity)",
+             [fixbrief, "followup", "--session", "model-demo",
               "--message", "In one sentence, what is the most likely cause?",
               "--provider", args.provider, "--model", args.model,
               "--timeout", "2400"], 9)

@@ -167,9 +167,11 @@ def cmd_followup(args: argparse.Namespace) -> int:
     except BriefError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return exc.exit_code
+    receipt_path = write_receipt(receipt)
     print(text)
     print(
-        f"[session={receipt['session_id']} run={receipt['run_id']}]",
+        f"[session={receipt['session_id']} run={receipt['run_id']} "
+        f"receipt={receipt_path}]",
         file=sys.stderr,
     )
     return 0
