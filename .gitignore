@@ -11,3 +11,4 @@ outputs/*.db
 outputs/demo_frames/
 outputs/llama-server*.log
 outputs/model-brief-run*.log
+outputs/record-demo-run.log
