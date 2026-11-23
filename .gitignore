@@ -9,3 +9,5 @@ __pycache__/
 outputs/*.db
 .env
 outputs/demo_frames/
+outputs/llama-server*.log
+outputs/model-brief-run*.log
