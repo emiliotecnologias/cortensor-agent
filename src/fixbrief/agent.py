@@ -45,18 +45,17 @@ from .store import save_brief
 
 OUTPUTS_DIR = Path("outputs")
 
+_SCHEMA_JSON = json.dumps(RepairBrief.model_json_schema(), separators=(",", ":"))
+
 INSTRUCTIONS = (
     "You are FixBrief, a phone-repair brief writer. "
     "First call get_source_facts for each listed source to collect facts. "
     "Use lookup_term for exact repair terminology when writing in Spanish, "
-    "Portuguese, or Arabic. Then return ONLY a JSON object matching the "
-    "RepairBrief schema: device, symptom, language, summary, "
-    "likely_causes, diagnostic_steps, repair_steps, tools_needed, "
-    "difficulty (easy|medium|hard|professional), "
-    "estimated_time_minutes, safety_warnings, sources. "
+    "Portuguese, or Arabic. Then return ONLY a JSON object matching this "
+    f"exact JSON Schema: {_SCHEMA_JSON} "
     "Ground every cause and step in the tool facts; do not invent "
-    "procedures that are not supported by the facts. Write the brief in "
-    "the requested language. "
+    "procedures, URLs, or sources that are not supported by the facts. "
+    "Write the brief in the requested language. "
     "IMPORTANT: Never call save_brief_markdown unless the user explicitly "
     "asks you to save a file. Your final message must be the JSON object "
     "itself, with no extra text before or after it."
@@ -170,7 +169,8 @@ def run_model_brief(
         "the RepairBrief JSON."
     )
     approval_log: list[str] = []
-    try:
+
+    def _attempt(message: str):
         with Agent(
             instructions=INSTRUCTIONS,
             output_type=RepairBrief,
@@ -179,10 +179,23 @@ def run_model_brief(
             config_path=str(config_path),
             session_id=session_id,
         ) as agent:
-            result = agent.run(
-                prompt,
+            return agent.run(
+                message,
                 timeout_seconds=timeout_seconds,
                 approval_callback=_approval_factory(auto_approve_writes, approval_log),
+            )
+
+    try:
+        try:
+            result = _attempt(prompt)
+        except AgentOutputValidationError:
+            # One corrective retry: weak local models often answer in
+            # prose first. The retry names the failure explicitly.
+            result = _attempt(
+                prompt
+                + "\n\nYour previous reply was not valid JSON for the "
+                "RepairBrief schema. Reply again with ONLY the JSON "
+                "object — no prose, no markdown fences, no invented URLs."
             )
     except ProviderError as exc:
         raise BriefError(
@@ -198,15 +211,16 @@ def run_model_brief(
 
     brief: RepairBrief = result.output
     brief.generated_by = f"openminion:{active_provider}/{active_model}"
-    if not brief.sources:
-        brief.sources = [
-            SourceRef(
-                title=Path(v).stem.replace("-", " ").title() if k == "sample" else v,
-                locator=v,
-                kind="offline-sample" if k == "sample" else "live-url",
-            )
-            for k, v in sources
-        ]
+    # Sources are ground truth from the request, never model-invented
+    # (a 1.5B model hallucinated an example.com URL in testing).
+    brief.sources = [
+        SourceRef(
+            title=Path(v).stem.replace("-", " ").title() if k == "sample" else v,
+            locator=v,
+            kind="offline-sample" if k == "sample" else "live-url",
+        )
+        for k, v in sources
+    ]
     receipt = {
         "openminion_version": OPENMINION_VERSION,
         "provider": active_provider,
