@@ -1,0 +1,10 @@
+.venv/
+.tmp/
+.fixbrief-home/
+.openminion-home/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+outputs/*.db
+.env
